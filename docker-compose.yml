@@ -1,0 +1,48 @@
+version: "3.8"
+services:
+  mongodb:
+    image: mongo:7.0-jammy
+    container_name: finance-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./data:/backup
+    environment:
+      - MONGO_INITDB_DATABASE=finance_dashboard
+    networks:
+      - finance-network
+
+  finance-dashboard:
+    build: .
+    container_name: finance-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongodb:27017/finance_dashboard
+      - JWT_SECRET=your_super_secret_jwt_key_here_change_in_production
+      - OPENAI_KEY=your_openai_key_here
+      - ADMIN_PASSWORD=your_admin_password_here
+    command: ["npm", "start"]
+    depends_on:
+      - mongodb
+    networks:
+      - finance-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  mongodb_data:
+
+networks:
+  finance-network:
+    driver: bridge

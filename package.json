@@ -1,0 +1,46 @@
+{
+  "name": "housemanagementapp",
+  "version": "1.0.0",
+  "description": "Personal Finance Dashboard - Full Stack Application",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run dev:backend\" \"npm run dev:web\"",
+    "dev:all": "concurrently -n \"BACKEND,FRONTEND,IOS\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen.bold\" \"npm run dev:backend\" \"npm run dev:web\" \"npm run dev:ios\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:web": "cd web && npm run dev",
+    "dev:ios": "cd mobile/ios-app && npm start",
+    "build": "npm run build:backend && npm run build:web",
+    "build:backend": "cd backend && npm run build || echo 'Backend build not configured'",
+    "build:web": "cd web && npm run build",
+    "start": "concurrently -n \"BACKEND,FRONTEND\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run start:backend\" \"npm run start:web\"",
+    "start:backend": "cd backend && npm start",
+    "start:web": "cd web && npm start",
+    "install:all": "npm install && cd backend && npm install && cd ../web && npm install && cd ../mobile/ios-app && npm install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "finance",
+    "dashboard",
+    "personal",
+    "TFSA",
+    "stocks",
+    "AI"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@react-navigation/native-stack": "^7.3.19",
+    "@tailwindcss/postcss": "^4.1.10",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "mongoose": "^8.16.0",
+    "openai": "^5.6.0",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
