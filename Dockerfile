@@ -15,6 +15,7 @@ WORKDIR /app/web
 COPY web/package*.json ./
 RUN npm ci
 COPY web/ ./
+# Build for static export
 RUN npm run build
 
 # Stage 2: Production backend with web frontend
@@ -32,10 +33,8 @@ RUN npm ci --only=production
 
 COPY backend/ ./
 
-# Copy built web frontend
-COPY --from=web-builder /app/web/.next ./web/.next
-COPY --from=web-builder /app/web/public ./web/public
-COPY --from=web-builder /app/web/package.json ./web/package.json
+# Copy built web frontend to public directory for serving
+COPY --from=web-builder /app/web/out ./public
 
 # Create data directory for MongoDB and backups
 RUN mkdir -p /app/data

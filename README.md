@@ -112,24 +112,47 @@ npm run ios  # Requires Xcode/iOS Simulator
 
 ## 🐳 Docker Deployment
 
+### 🎯 Integrated Web + API Container
+
+The Docker container now serves both the web frontend and backend API from a single container on port 3000:
+
+- **🌐 Web Interface**: `http://localhost:3000`
+- **🔌 API Endpoints**: `http://localhost:3000/api/*`
+- **💡 Health Check**: `http://localhost:3000/api/health`
+
 ### Using Docker Compose (Recommended)
 
 ```bash
-# Configure environment variables in docker-compose.yml
-docker-compose up --build
+# Start the complete stack (App + MongoDB)
+docker-compose up -d
+
+# To access the application:
+#   Web Interface: http://localhost:3000
+#   API: http://localhost:3000/api/health
 ```
 
 ### Manual Docker Build
 
 ```bash
+# Build the integrated container
 docker build -t finance-dashboard .
-docker run -p 3000:3000 -v ./data:/app/data finance-dashboard
+
+# Run with external MongoDB
+docker run -d --name finance-app -p 3000:3000 \
+  -e MONGO_URI=mongodb://host.docker.internal:27017/finance_dashboard \
+  finance-dashboard
+
+# Run with Docker Compose MongoDB
+docker run -d --name finance-app -p 3000:3000 \
+  --network finance-app_default \
+  -e MONGO_URI=mongodb://finance-mongodb:27017/finance_dashboard \
+  finance-dashboard
 ```
 
 **Environment Variables for Production:**
 ```env
 NODE_ENV=production
-MONGO_URI=mongodb://localhost:27017/finance_dashboard
+MONGO_URI=mongodb://finance-mongodb:27017/finance_dashboard
 JWT_SECRET=your_super_secret_jwt_key_here
 OPENAI_KEY=sk-proj-your-openai-key-here
 ADMIN_PASSWORD=your_admin_password_here
@@ -197,9 +220,13 @@ docker exec -it finance-app sh
 
 **Problem: Web frontend not loading**
 ```bash
-# The Docker image serves backend API only
-# For full-stack deployment, use docker-compose.yml
-# Web frontend should be served separately or through reverse proxy
+# The Docker image serves both web frontend and backend API
+# Check if static files are properly built and served
+curl http://localhost:3000  # Should return HTML
+curl http://localhost:3000/api/health  # Should return JSON
+
+# If frontend doesn't load, check container logs
+docker logs finance-app-container-name
 ```
 
 #### Performance Optimization
@@ -239,21 +266,80 @@ services:
 
 #### Testing Docker Build
 
+**Complete Docker Test Suite:**
+
 ```bash
-# Test build process
+# 1. Clean build test
 docker build -t finance-dashboard-test .
 
-# Test container startup
+# 2. Container startup test
 docker run -d -p 3000:3000 --name test-container finance-dashboard-test
 
-# Test API endpoints
-curl http://localhost:3000/api/health
+# 3. Wait for startup (health check built-in)
+sleep 10
 
-# Check logs for errors
-docker logs test-container
+# 4. Test all critical endpoints
+echo "Testing API health..."
+curl -f http://localhost:3000/api/health || echo "❌ Health check failed"
+
+echo "Testing auth endpoint..."
+curl -f http://localhost:3000/api/auth/login || echo "✅ Auth endpoint reachable (404 expected)"
+
+echo "Testing finance endpoint..."
+curl -f http://localhost:3000/api/finance/entries || echo "✅ Finance endpoint reachable (401 expected)"
+
+# 5. Check container health status
+docker inspect test-container --format='{{.State.Health.Status}}'
+
+# 6. Review logs for errors
+echo "Checking logs for critical errors..."
+docker logs test-container | grep -i "error\|fail\|exception" || echo "✅ No critical errors found"
+
+# 7. Test graceful shutdown
+docker stop test-container
+
+# 8. Cleanup
+docker rm test-container
+docker rmi finance-dashboard-test
+```
+
+**Automated Testing Script:**
+
+```bash
+#!/bin/bash
+# save as test-docker.sh
+set -e
+
+echo "🧪 Starting Docker build test..."
+
+# Build and tag
+docker build -t finance-dashboard-test .
+
+# Run detached
+docker run -d -p 3000:3000 --name finance-test finance-dashboard-test
+
+# Wait for startup
+echo "⏳ Waiting for container startup..."
+for i in {1..30}; do
+  if curl -s http://localhost:3000/api/health > /dev/null; then
+    echo "✅ Container is healthy!"
+    break
+  fi
+  sleep 2
+done
+
+# Test endpoints
+if curl -f http://localhost:3000/api/health; then
+  echo "✅ All tests passed!"
+else
+  echo "❌ Health check failed"
+  docker logs finance-test
+  exit 1
+fi
 
 # Cleanup
-docker stop test-container && docker rm test-container
+docker stop finance-test && docker rm finance-test
+echo "🎉 Docker test completed successfully!"
 ```
 
 #### Common Error Solutions
@@ -267,16 +353,67 @@ docker stop test-container && docker rm test-container
 | `Health check failing` | Verify `/api/health` endpoint |
 | `Port 3000 already in use` | Change port mapping: `-p 3001:3000` |
 
-#### Development vs Production
+#### Docker Monitoring & Debugging
 
-**Development:** Single container with file watching
+**Real-time Container Monitoring:**
+
 ```bash
-docker run -it -p 3000:3000 -v $(pwd):/app finance-dashboard npm run dev
+# Monitor resource usage
+docker stats finance-app finance-mongodb
+
+# Follow logs in real-time
+docker logs -f finance-app
+
+# Execute commands inside running container
+docker exec -it finance-app sh
+
+# Inside container debugging:
+# Check Node.js process
+ps aux | grep node
+
+# Check MongoDB connectivity
+ping mongodb
+
+# Check environment variables
+env | grep MONGO
+
+# Test internal API
+curl localhost:3000/api/health
 ```
 
-**Production:** Multi-service with docker-compose
+**Production Health Monitoring:**
+
 ```bash
-docker-compose up -d
+# Set up health check monitoring
+while true; do
+  if ! curl -f http://localhost:3000/api/health >/dev/null 2>&1; then
+    echo "$(date): ❌ Health check failed - restarting container"
+    docker-compose restart finance-app
+  else
+    echo "$(date): ✅ Application healthy"
+  fi
+  sleep 30
+done
+```
+
+**Docker Compose Troubleshooting:**
+
+```bash
+# Check all services status
+docker-compose ps
+
+# View logs for specific service
+docker-compose logs finance-app
+docker-compose logs mongodb
+
+# Restart specific service
+docker-compose restart finance-app
+
+# Rebuild and restart
+docker-compose up --build -d
+
+# Check network connectivity between services
+docker-compose exec finance-app ping mongodb
 ```
 ````markdown
 ## 🎯 Usage Guide

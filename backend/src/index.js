@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const OpenAI = require('openai');
+const path = require('path');
 const { filterPII } = require('./middleware/filterPII');
 const authRoutes = require('./routes/auth');
 const financeRoutes = require('./routes/finance');
@@ -11,8 +12,13 @@ const backupRoutes = require('./routes/backup');
 
 const app = express();
 app.use(express.json());
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP for serving static files
+}));
 app.use(cors());
+
+// Serve static files from the web frontend
+app.use(express.static(path.join(__dirname, '../public')));
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -68,6 +74,19 @@ app.use('/api/backup', backupRoutes);
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Serve the web frontend for all non-API routes
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+app.get('/explore', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
