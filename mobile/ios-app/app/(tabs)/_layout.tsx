@@ -22,16 +22,20 @@ export default function TabLayout() {
         tabBarStyle: Platform.select({
           ios: {
             position: 'absolute',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
             borderTopWidth: 0,
             elevation: 0,
-            shadowOpacity: 0.1,
-            shadowOffset: { width: 0, height: -3 },
-            shadowRadius: 10,
-            height: 85, // Extra height for safe area
-            paddingBottom: 25, // Safe area padding
+            shadowOpacity: 0.15,
+            shadowOffset: { width: 0, height: -4 },
+            shadowRadius: 12,
+            shadowColor: '#000',
+            height: 88, // Optimized height for safe area
+            paddingBottom: 28, // Safe area padding for home indicator
+            paddingTop: 8,
           },
-          default: {},
+          default: {
+            height: 60,
+          },
         }),
       }}>
       <Tabs.Screen

@@ -43,17 +43,25 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.welcomeText}>Welcome back!</Text>
-          <Text style={styles.nameText}>John Doe</Text>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      {/* Enhanced Header with Finance Branding */}
+      <LinearGradient
+        colors={['#FFFFFF', '#F8FAFC']}
+        style={styles.headerGradient}
+      >
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.welcomeText}>Welcome back!</Text>
+            <Text style={styles.nameText}>John Doe</Text>
+          </View>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.notificationButton}>
+              <IconSymbol name="bell" size={24} color="#6B7280" />
+              <View style={styles.notificationBadge} />
+            </TouchableOpacity>
+          </View>
         </View>
-        <TouchableOpacity style={styles.notificationButton}>
-          <IconSymbol name="bell" size={24} color="#6B7280" />
-        </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
       <ScrollView 
         style={styles.scrollView} 
@@ -160,12 +168,12 @@ export default function HomeScreen() {
         activeOpacity={0.8}
       >
         <LinearGradient
-          colors={['#6366F1', '#8B5CF6']}
+          colors={['#667EEA', '#764BA2', '#F093FB']}
           style={styles.aiButtonGradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <IconSymbol name="brain.head.profile" size={28} color="#FFFFFF" />
+          <IconSymbol name="brain.head.profile" size={32} color="#FFFFFF" />
         </LinearGradient>
       </TouchableOpacity>
 
@@ -225,14 +233,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
+  headerGradient: {
+    paddingBottom: 8,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 16,
     paddingBottom: 20,
-    backgroundColor: '#FFFFFF',
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   welcomeText: {
     fontSize: 16,
@@ -251,6 +268,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 8,
+    height: 8,
+    backgroundColor: '#EF4444',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
@@ -405,26 +434,29 @@ const styles = StyleSheet.create({
   },
   floatingAiButton: {
     position: 'absolute',
-    bottom: 110, // Above tab bar
+    bottom: 115, // Positioned above enhanced tab bar
     right: 20,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     shadowColor: '#6366F1',
     shadowOffset: {
       width: 0,
-      height: 8,
+      height: 12,
     },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 16,
+    zIndex: 1000,
   },
   aiButtonGradient: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   modalOverlay: {
     flex: 1,
