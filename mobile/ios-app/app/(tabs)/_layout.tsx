@@ -14,14 +14,22 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: '#10B981', // Emerald green for finance theme
+        tabBarInactiveTintColor: '#6B7280',
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            borderTopWidth: 0,
+            elevation: 0,
+            shadowOpacity: 0.1,
+            shadowOffset: { width: 0, height: -3 },
+            shadowRadius: 10,
+            height: 85, // Extra height for safe area
+            paddingBottom: 25, // Safe area padding
           },
           default: {},
         }),
@@ -29,15 +37,53 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Dashboard',
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol 
+              size={24} 
+              name={focused ? "chart.bar.fill" : "chart.bar"} 
+              color={color} 
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Analytics',
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol 
+              size={24} 
+              name={focused ? "chart.line.uptrend.xyaxis" : "chart.line.uptrend.xyaxis"} 
+              color={color} 
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="budget"
+        options={{
+          title: 'Budget',
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol 
+              size={24} 
+              name={focused ? "creditcard.fill" : "creditcard"} 
+              color={color} 
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol 
+              size={24} 
+              name={focused ? "person.crop.circle.fill" : "person.crop.circle"} 
+              color={color} 
+            />
+          ),
         }}
       />
     </Tabs>
