@@ -52,7 +52,7 @@ npm install openai
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  apiKey: "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",
+  apiKey: process.env.OPENAI_KEY, // Use environment variable instead
 });
 
 const completion = openai.chat.completions.create({
